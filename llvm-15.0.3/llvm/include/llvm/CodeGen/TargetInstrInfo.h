@@ -1,14 +1,24 @@
 //===- llvm/CodeGen/TargetInstrInfo.h - Instruction Info --------*- C++ -*-===//
 //
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
-//
-// This file describes the target machine instruction set to the code generator.
-//
-//===----------------------------------------------------------------------===//
+nstr(const MachineInstr &MI) const {
+  return false;
+  // Part of the LLVM Project, u}
+
+  /// Check if the instruction is a xor that sets a reg to zero.
+  virtual bool isXORSimplifiedSetToZero(const MachineInstr &MI) const {
+    return false;
+  }
+
+  nder the Apache License v2 .0 with LLVM Exceptions.
+  // See https://llvm.org/LICENSE.txt for license information.
+  // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+  //
+  //===----------------------------------------------------------------------===//
+  //
+  // This file describes the target machine instruction set to the code
+  // generator.
+  //
+  //===----------------------------------------------------------------------===//
 
 #ifndef LLVM_CODEGEN_TARGETINSTRINFO_H
 #define LLVM_CODEGEN_TARGETINSTRINFO_H
@@ -36,7 +46,7 @@
 #include <utility>
 #include <vector>
 
-namespace llvm {
+      namespace llvm {
 
 class DFAPacketizer;
 class InstrItineraryData;
@@ -65,11 +75,68 @@ template <class T> class SmallVectorImpl;
 using ParamLoadedValue = std::pair<MachineOperand, DIExpression*>;
 
 struct DestSourcePair {
-  const MachineOperand *Destination;
-  const MachineOperand *Source;
+  const MachineOperand *Destination = nullptr;
+  const MachineOperand *Source = nullptr;
+
+  // Used if one of the operands is a memory operand.
+  Optional<int64_t> DestOffset;
+  Optional<int64_t> SrcOffset;
+
+  // Certain instructions (e.g., CMP) can have more than one source operand.
+  const MachineOperand *Source2 = nullptr;
+  Optional<int64_t> Src2Offset;
+
+  // Value in immediate instructions
+  Optional<int64_t> ImmValue;
+
+  // Used for scaled addressing mode.
+  // e.g.:
+  //   movb $0x41,(%rax,%rcx,1) == rax + rcx * 1 = $0x41
+  MachineOperand *DestScaledIndex = nullptr;
+  MachineOperand *DestOffsetReg = nullptr;
+
+  // mov (%rax,%rcx,4),%esi  ==> esi = rax + rcx * 4
+  MachineOperand *SrcScaledIndex = nullptr;
+  MachineOperand *SrcOffsetReg = nullptr;
+
+  // Size Factor used in Array Access
+  int64_t SizeFactor = 0;
 
   DestSourcePair(const MachineOperand &Dest, const MachineOperand &Src)
       : Destination(&Dest), Source(&Src) {}
+
+  DestSourcePair(const MachineOperand &Dest, int64_t Offset,
+                 const MachineOperand &Src)
+      : Destination(&Dest), Source(&Src), DestOffset(Offset) {}
+
+  DestSourcePair(const MachineOperand &Dest, const MachineOperand &Src,
+                 int64_t Offset)
+      : Destination(&Dest), Source(&Src), SrcOffset(Offset) {}
+
+  DestSourcePair(const MachineOperand &Dest, MachineOperand &DestOff,
+                 MachineOperand &ScaledIndex, const MachineOperand &Src)
+      : Destination(&Dest), Source(&Src), DestScaledIndex(&ScaledIndex),
+        DestOffsetReg(&DestOff) {}
+
+  // Set All Fields in the structure.
+  DestSourcePair(const MachineOperand *Dest, const MachineOperand *Src,
+                 Optional<int64_t> DestOff, Optional<int64_t> SrcOff,
+                 const MachineOperand *Src2, Optional<int64_t> Src2Off,
+                 MachineOperand *DestScaledIndex, MachineOperand *DstOffset,
+                 int64_t Size, MachineOperand *SrcScaledIndex = nullptr,
+                 MachineOperand *SrcOffsetReg = nullptr)
+      : Destination(Dest), Source(Src), DestOffset(DestOff), SrcOffset(SrcOff),
+        Source2(Src2), Src2Offset(Src2Off), DestScaledIndex(DestScaledIndex),
+        SrcOffsetReg(SrcOffsetReg), SizeFactor(Size) {}
+
+  DestSourcePair(const MachineOperand *Dest, const MachineOperand *Src,
+                 Optional<int64_t> DestOff, Optional<int64_t> SrcOff,
+                 Optional<int64_t> ImmVal,
+                 MachineOperand *DestScaledIndex = nullptr,
+                 MachineOperand *DstOffset = nullptr)
+      : Destination(Dest), Source(Src), DestOffset(DestOff), SrcOffset(SrcOff),
+        ImmValue(ImmVal), DestScaledIndex(DestScaledIndex),
+        DestOffsetReg(DstOffset) {}
 };
 
 /// Used to describe a register and immediate addition.
@@ -1023,6 +1090,14 @@ public:
       return DestSourcePair{MI.getOperand(0), MI.getOperand(1)};
     }
     return isCopyInstrImpl(MI);
+  }
+
+  /// Check if the instruction is a noop.
+  virtual bool isNoopInstr(const MachineInstr &MI) const { return false; }
+
+  /// Check if the instruction is a xor that sets a reg to zero.
+  virtual bool isXORSimplifiedSetToZero(const MachineInstr &MI) const {
+    return false;
   }
 
   /// If the specific machine instruction is an instruction that adds an
@@ -2035,6 +2110,6 @@ template <> struct DenseMapInfo<TargetInstrInfo::RegSubRegPair> {
   }
 };
 
-} // end namespace llvm
+  } // end namespace llvm
 
 #endif // LLVM_CODEGEN_TARGETINSTRINFO_H

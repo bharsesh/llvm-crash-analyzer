@@ -80,38 +80,40 @@ public:
   };
 
   enum MIFlag {
-    NoFlags      = 0,
-    FrameSetup   = 1 << 0,              // Instruction is used as a part of
-                                        // function frame setup code.
-    FrameDestroy = 1 << 1,              // Instruction is used as a part of
-                                        // function frame destruction code.
-    BundledPred  = 1 << 2,              // Instruction has bundled predecessors.
-    BundledSucc  = 1 << 3,              // Instruction has bundled successors.
-    FmNoNans     = 1 << 4,              // Instruction does not support Fast
-                                        // math nan values.
-    FmNoInfs     = 1 << 5,              // Instruction does not support Fast
-                                        // math infinity values.
-    FmNsz        = 1 << 6,              // Instruction is not required to retain
-                                        // signed zero values.
-    FmArcp       = 1 << 7,              // Instruction supports Fast math
-                                        // reciprocal approximations.
-    FmContract   = 1 << 8,              // Instruction supports Fast math
-                                        // contraction operations like fma.
-    FmAfn        = 1 << 9,              // Instruction may map to Fast math
-                                        // intrinsic approximation.
-    FmReassoc    = 1 << 10,             // Instruction supports Fast math
-                                        // reassociation of operand order.
-    NoUWrap      = 1 << 11,             // Instruction supports binary operator
-                                        // no unsigned wrap.
-    NoSWrap      = 1 << 12,             // Instruction supports binary operator
-                                        // no signed wrap.
-    IsExact      = 1 << 13,             // Instruction supports division is
-                                        // known to be exact.
-    NoFPExcept   = 1 << 14,             // Instruction does not raise
-                                        // floatint-point exceptions.
-    NoMerge      = 1 << 15,             // Passes that drop source location info
-                                        // (e.g. branch folding) should skip
-                                        // this instruction.
+    NoFlags = 0,
+    FrameSetup = 1 << 0,   // Instruction is used as a part of
+                           // function frame setup code.
+    FrameDestroy = 1 << 1, // Instruction is used as a part of
+                           // function frame destruction code.
+    BundledPred = 1 << 2,  // Instruction has bundled predecessors.
+    BundledSucc = 1 << 3,  // Instruction has bundled successors.
+    FmNoNans = 1 << 4,     // Instruction does not support Fast
+                           // math nan values.
+    FmNoInfs = 1 << 5,     // Instruction does not support Fast
+                           // math infinity values.
+    FmNsz = 1 << 6,        // Instruction is not required to retain
+                           // signed zero values.
+    FmArcp = 1 << 7,       // Instruction supports Fast math
+                           // reciprocal approximations.
+    FmContract = 1 << 8,   // Instruction supports Fast math
+                           // contraction operations like fma.
+    FmAfn = 1 << 9,        // Instruction may map to Fast math
+                           // intrinsic approximation.
+    FmReassoc = 1 << 10,   // Instruction supports Fast math
+                           // reassociation of operand order.
+    NoUWrap = 1 << 11,     // Instruction supports binary operator
+                           // no unsigned wrap.
+    NoSWrap = 1 << 12,     // Instruction supports binary operator
+                           // no signed wrap.
+    IsExact = 1 << 13,     // Instruction supports division is
+                           // known to be exact.
+    NoFPExcept = 1 << 14,  // Instruction does not raise
+                           // floatint-point exceptions.
+    NoMerge = 1 << 15,     // Passes that drop source location info
+                           // (e.g. branch folding) should skip
+                           // this instruction.
+    CrashStart = 1 << 15,  // First Instruction that needs to be
+                           // analysed via crash-blamer.
   };
 
 private:

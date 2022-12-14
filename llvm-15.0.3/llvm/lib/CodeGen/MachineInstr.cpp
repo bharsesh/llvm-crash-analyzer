@@ -1608,6 +1608,8 @@ void MachineInstr::print(raw_ostream &OS, ModuleSlotTracker &MST,
     OS << "nofpexcept ";
   if (getFlag(MachineInstr::NoMerge))
     OS << "nomerge ";
+  if (getFlag(MachineInstr::CrashStart))
+    OS << "crash-start ";
 
   // Print the opcode name.
   if (TII)
