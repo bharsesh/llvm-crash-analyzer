@@ -1389,8 +1389,8 @@ bool MIParser::parseInstruction(unsigned &OpCode, unsigned &Flags) {
          Token.is(MIToken::kw_arcp) || Token.is(MIToken::kw_contract) ||
          Token.is(MIToken::kw_afn) || Token.is(MIToken::kw_reassoc) ||
          Token.is(MIToken::kw_nuw) || Token.is(MIToken::kw_nsw) ||
-         Token.is(MIToken::kw_exact) || Token.is(MIToken::kw_nofpexcept)) ||
-	 Token.is(MIToken::kw_crash_start)) {
+         Token.is(MIToken::kw_exact) || Token.is(MIToken::kw_nofpexcept) ||
+         Token.is(MIToken::kw_crash_start)) {
     // Mine frame and fast math flags
     if (Token.is(MIToken::kw_frame_setup))
       Flags |= MachineInstr::FrameSetup;
@@ -1422,7 +1422,7 @@ bool MIParser::parseInstruction(unsigned &OpCode, unsigned &Flags) {
       Flags |= MachineInstr::CrashStart;
 
     lex();
-    }
+  }
   if (Token.isNot(MIToken::Identifier))
     return error("expected a machine instruction");
   StringRef InstrName = Token.stringValue();

@@ -30,19 +30,19 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/MC/MCInstrInfo.h"
+#include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/CommandLine.h"
-#include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/WithColor.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
 
+#include "Plugins/Disassembler/LLVMC/DisassemblerLLVMC.h"
 #include "lldb/Core/Address.h"
 #include "lldb/Core/Disassembler.h"
 #include "lldb/Utility/ArchSpec.h"
 #include "lldb/Utility/DataBufferHeap.h"
 #include "lldb/Utility/DataExtractor.h"
-#include "Plugins/Disassembler/llvm/DisassemblerLLVMC.h"
 
 #include <sstream>
 #include <unordered_set>
@@ -210,7 +210,7 @@ MachineInstr *crash_analyzer::Decompiler::addNoop(MachineFunction *MF,
                                                   DebugLoc *Loc) {
   auto TII = MF->getSubtarget().getInstrInfo();
   llvm::MCInst Inst;
-  TII->getNoop(Inst);
+  TII->getNop();
   if (const unsigned NoopOpcode = Inst.getOpcode()) {
     const MCInstrDesc &MCID = MII->get(NoopOpcode);
     MachineInstrBuilder Builder = BuildMI(MBB, DebugLoc(), MCID);
@@ -271,10 +271,11 @@ bool crash_analyzer::Decompiler::DecodeIntrsToMIR(
   lldb::addr_t FuncLoadAddr = FuncStart.GetLoadAddress(Target);
 
   lldb::DataBufferSP BufferSp(
-      new lldb_private::DataBufferHeap(FuncRange.second, 0));
+     new lldb_private::DataBufferHeap(FuncRange.second, 0));
   lldb::SBError Err;
-  Target.ReadMemory(FuncStart, BufferSp->GetBytes(), BufferSp->GetByteSize(),
-                    Err);
+  // FIXME : Compilation Error
+  //Target.ReadMemory(FuncStart, BufferSp->GetBytes(), BufferSp->GetByteSize(),
+  //                  Err);
 
   lldb_private::DataExtractor Extractor(BufferSp, Target.GetByteOrder(),
                                         Target.GetAddressByteSize());
@@ -339,12 +340,12 @@ bool crash_analyzer::Decompiler::DecodeIntrsToMIR(
 
       // This is used to prevent wrong DI SP attached to inlined
       // instructions.
-      if (InlinedFnName != "") {
-        if (SPs.count(InlinedFnName))
-          DISP = SPs[InlinedFnName];
+      if (!InlinedFnName.empty()) {
+        if (SPs.count(InlinedFnName.str()))
+          DISP = SPs[InlinedFnName.str()];
       } else {
-        if (SPs.count(OriginalFunction))
-          DISP = SPs[OriginalFunction];
+        if (SPs.count(OriginalFunction.str()))
+          DISP = SPs[OriginalFunction.str()];
       }
 
       auto DILoc = DILocation::get(Ctx, Line, Column, DISP);
@@ -504,7 +505,6 @@ llvm::Error crash_analyzer::Decompiler::run(
     uint64_t AddrValue = 0;
 
     StringRef FunctionName = Frame.first;
-
     MF = &createMF(FunctionName);
     MBB = MF->CreateMachineBasicBlock();
     MF->push_back(MBB);
@@ -528,7 +528,7 @@ llvm::Error crash_analyzer::Decompiler::run(
     if (Frame.second.IsInlined()) {
       auto TII = MF->getSubtarget().getInstrInfo();
       MCInst NopInst;
-      TII->getNoop(NopInst);
+      TII->getNop();
       const unsigned Opcode = NopInst.getOpcode();
       const MCInstrDesc &MCID = MII->get(Opcode);
       BuildMI(MBB, DebugLoc(), MCID);
@@ -578,7 +578,7 @@ llvm::Error crash_analyzer::Decompiler::run(
     BF.MF = MF;
 
     // Remove the function from working set.
-    FunctionsToDecompile.erase(FunctionName);
+    FunctionsToDecompile.erase(FunctionName.str());
     // If we decompiled all the functions, break the loop.
     if (FunctionsToDecompile.empty()) break;
   }
@@ -627,7 +627,7 @@ crash_analyzer::Decompiler::decompileInlinedFnOutOfbt(StringRef TargetName,
 
   auto TII = MF->getSubtarget().getInstrInfo();
   MCInst NopInst;
-  TII->getNoop(NopInst);
+  TII->getNop();
   const unsigned Opcode = NopInst.getOpcode();
   const MCInstrDesc &MCID = MII->get(Opcode);
   BuildMI(MBB, DebugLoc(), MCID);
@@ -649,8 +649,8 @@ void crash_analyzer::Decompiler::handleSubprogramDI(DIBuilder &DIB,
                                DINode::FlagZero, SPFlags);
   (const_cast<Function *>(&F))->setSubprogram(SP);
   DIB.finalizeSubprogram(SP);
-  if (!SPs.count(MF->getName()))
-    SPs.insert({MF->getName(), SP});
+  if (!SPs.count(MF->getName().str()))
+    SPs.insert({MF->getName().str(), SP});
   *SPAdr = SP;
 }
 
@@ -663,7 +663,8 @@ void crash_analyzer::Decompiler::handleCompileUnitDI(DIBuilder &DIB,
     *CUAdr = DIB.createCompileUnit(
         dwarf::DW_LANG_C, *FileAdr, "llvm-crash-analyzer", /*isOptimized=*/true,
         "", 0, StringRef(), DICompileUnit::DebugEmissionKind::FullDebug, 0,
-        true, false, DICompileUnit::DebugNameTableKind::Default, false, true);
+        true, false, DICompileUnit::DebugNameTableKind::Default, false, "", "",
+        true);
     CUs.insert({AbsFileName, std::make_pair(*FileAdr, *CUAdr)});
   } else {
     *FileAdr = CUs[AbsFileName].first;
@@ -731,8 +732,8 @@ MachineFunction* crash_analyzer::Decompiler::decompileOnDemand(StringRef TargetN
   if (!DecTarget)
     return nullptr;
 
-  if (AlreadyDecompiledFns.count(TargetName))
-    return AlreadyDecompiledFns[TargetName];
+  if (AlreadyDecompiledFns.count(TargetName.str()))
+    return AlreadyDecompiledFns[TargetName.str()];
 
   auto SymCtxs = DecTarget->FindFunctions(TargetName.data());
   if (SymCtxs.GetSize() != 1) {

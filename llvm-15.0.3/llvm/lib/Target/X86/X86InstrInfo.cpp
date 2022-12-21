@@ -746,6 +746,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   const TargetRegisterInfo *TRI = &getRegisterInfo();
   const MachineOperand *BaseOp;
   int64_t Offset;
+  bool OffsetIsScalable;
   Optional<int64_t> ImmVal;
 
   // TODO: All the mem operands can be addressed in different modes.
@@ -757,7 +758,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   case X86::MOV8mi:
   case X86::MOV16mi:
   case X86::MOV32mi: {
-    if (getMemOperandWithOffset(MI, BaseOp, Offset, TRI))
+    if (getMemOperandWithOffset(MI, BaseOp, Offset, OffsetIsScalable, TRI))
       return DestSourcePair{BaseOp, &MI.getOperand(5), Offset, None, ImmVal};
 
     // This should be scaled indexing addressing mode.
@@ -807,7 +808,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   case X86::XOR32rm:
   case X86::XOR64rm: {
     const MachineOperand *Dest = &(MI.getOperand(0));
-    if (getMemOperandWithOffset(MI, BaseOp, Offset, TRI))
+    if (getMemOperandWithOffset(MI, BaseOp, Offset, OffsetIsScalable, TRI))
       return DestSourcePair{*Dest, *BaseOp, Offset};
     ;
 
@@ -839,7 +840,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   case X86::ADD32mr:
   case X86::ADD64mr: {
     const MachineOperand *Src = &(MI.getOperand(5));
-    if (!getMemOperandWithOffset(MI, BaseOp, Offset, TRI))
+    if (!getMemOperandWithOffset(MI, BaseOp, Offset, OffsetIsScalable, TRI))
       return None;
     return DestSourcePair{*BaseOp, Offset, *Src};
   }
@@ -862,7 +863,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   case X86::LEA32r:
   case X86::LEA64_32r: {
     const MachineOperand *Dest = &(MI.getOperand(0));
-    if (!getMemOperandWithOffset(MI, BaseOp, Offset, TRI))
+    if (!getMemOperandWithOffset(MI, BaseOp, Offset, OffsetIsScalable, TRI))
       return None;
     return DestSourcePair{*Dest, *BaseOp, Offset};
   }
@@ -898,7 +899,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   case X86::CMP32rm:
   case X86::CMP64rm: {
     const MachineOperand *Src = &(MI.getOperand(0));
-    if (!getMemOperandWithOffset(MI, BaseOp, Offset, TRI))
+    if (!getMemOperandWithOffset(MI, BaseOp, Offset, OffsetIsScalable, TRI))
       return None;
     return DestSourcePair{nullptr, Src,     None, None, BaseOp,
                           Offset,  nullptr, 0,    0};
@@ -906,7 +907,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   case X86::CMP8mi:
   case X86::CMP32mi8: {
     const MachineOperand *Src2 = &(MI.getOperand(5));
-    if (!getMemOperandWithOffset(MI, BaseOp, Offset, TRI))
+    if (!getMemOperandWithOffset(MI, BaseOp, Offset, OffsetIsScalable, TRI))
       return None;
     return DestSourcePair{nullptr, BaseOp,  None, Offset, Src2,
                           None,    nullptr, 0,    0};
@@ -1007,7 +1008,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   case X86::TEST8mi:
   case X86::TEST16mi:
   case X86::TEST32mi: {
-    if (!getMemOperandWithOffset(MI, BaseOp, Offset, TRI))
+    if (!getMemOperandWithOffset(MI, BaseOp, Offset, OffsetIsScalable, TRI))
       return None;
     return DestSourcePair{nullptr, BaseOp,  None,    Offset, &MI.getOperand(5),
                           None,    nullptr, nullptr, 0};
@@ -1110,7 +1111,7 @@ X86InstrInfo::getDestAndSrc(const MachineInstr &MI) const {
   case X86::ADD32mi8:
   case X86::ADD64mi8:
   case X86::SETCCm: {
-    if (!getMemOperandWithOffset(MI, BaseOp, Offset, TRI))
+    if (!getMemOperandWithOffset(MI, BaseOp, Offset, OffsetIsScalable, TRI))
       return None;
     return DestSourcePair{*BaseOp, Offset, MI.getOperand(5)};
   }
@@ -1188,7 +1189,7 @@ unsigned X86InstrInfo::isStoreToStackSlotPostFE(const MachineInstr &MI,
                                                 int &FrameIndex) const {
   unsigned Dummy;
   if (isFrameStoreOpcode(MI.getOpcode(), Dummy)) {
-    unsgned Reg;
+    unsigned Reg;
     if ((Reg = isStoreToStackSlot(MI, FrameIndex)))
       return Reg;
     // Check for post-frame index elimination operations
@@ -4038,6 +4039,26 @@ X86InstrInfo::isCopyInstrImpl(const MachineInstr &MI) const {
   if (MI.isMoveReg())
     return DestSourcePair{MI.getOperand(0), MI.getOperand(1)};
   return None;
+}
+
+Optional<RegImmPair> X86InstrInfo::isAddImmediate(const MachineInstr &MI,
+                                                  Register Reg) const {
+  if (!MI.getOperand(0).isReg())
+    return None;
+
+  if (Reg != MI.getOperand(0).getReg())
+    return None;
+
+  int64_t Offset = 0;
+  switch (MI.getOpcode()) {
+  default:
+    return None;
+  case X86::ADD32ri8:
+    // $eax = ADD32ri8 $eax(tied-def 0), 1
+    Offset = MI.getOperand(2).getImm();
+    break;
+  }
+  return RegImmPair{MI.getOperand(1).getReg(), Offset};
 }
 
 static unsigned getLoadStoreRegOpcode(Register Reg,

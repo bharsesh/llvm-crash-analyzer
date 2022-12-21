@@ -12,6 +12,6 @@ llvm_add_library(CrashAnalyzerDecompiler
   Decompiler.cpp
   FixRegStateFlags.cpp
   LINK_LIBS
-    lldbPluginDisassemblerLLVM
+    lldbPluginDisassemblerLLVMC
     liblldb
   )

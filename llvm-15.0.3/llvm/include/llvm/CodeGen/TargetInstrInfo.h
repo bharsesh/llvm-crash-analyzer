@@ -1,24 +1,14 @@
 //===- llvm/CodeGen/TargetInstrInfo.h - Instruction Info --------*- C++ -*-===//
 //
-nstr(const MachineInstr &MI) const {
-  return false;
-  // Part of the LLVM Project, u}
-
-  /// Check if the instruction is a xor that sets a reg to zero.
-  virtual bool isXORSimplifiedSetToZero(const MachineInstr &MI) const {
-    return false;
-  }
-
-  nder the Apache License v2 .0 with LLVM Exceptions.
-  // See https://llvm.org/LICENSE.txt for license information.
-  // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-  //
-  //===----------------------------------------------------------------------===//
-  //
-  // This file describes the target machine instruction set to the code
-  // generator.
-  //
-  //===----------------------------------------------------------------------===//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// This file describes the target machine instruction set to the code generator.
+//
+//===----------------------------------------------------------------------===//
 
 #ifndef LLVM_CODEGEN_TARGETINSTRINFO_H
 #define LLVM_CODEGEN_TARGETINSTRINFO_H
@@ -344,6 +334,9 @@ public:
                                              int &FrameIndex) const {
     return 0;
   }
+
+  virtual bool isLoad(const MachineInstr &MI) const { return false; }
+  virtual bool isStore(const MachineInstr &MI) const { return false; }
 
   /// If the specified machine instruction has a load from a stack slot,
   /// return true along with the FrameIndices of the loaded stack slot and the
@@ -1099,6 +1092,17 @@ public:
   virtual bool isXORSimplifiedSetToZero(const MachineInstr &MI) const {
     return false;
   }
+
+  /// Return both source and destination operands for specified instruction,
+  /// if any.
+  virtual Optional<DestSourcePair> getDestAndSrc(const MachineInstr &MI) const {
+    return None;
+  }
+
+  /// Check if the instruction is push/pop.
+  virtual bool isPush(const MachineInstr &MI) const { return false; }
+
+  virtual bool isPop(const MachineInstr &MI) const { return false; }
 
   /// If the specific machine instruction is an instruction that adds an
   /// immediate value and a physical register, and stores the result in

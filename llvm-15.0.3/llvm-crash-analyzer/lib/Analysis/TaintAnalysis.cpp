@@ -930,7 +930,7 @@ bool crash_analyzer::TaintAnalysis::runOnBlameMF(BlameModule &BM,
 	       continue;
 	      }
           if (CalleeOp.isGlobal()) {
-            MachineFunction *CalledMF = getCalledMF(BM, TargetName);
+            MachineFunction *CalledMF = getCalledMF(BM, TargetName.str());
             if (CalledMF) {
               LLVM_DEBUG(llvm::dbgs()
                              << "#### Processing callee " << TargetName << "\n";);
@@ -1010,34 +1010,34 @@ bool crash_analyzer::TaintAnalysis::runOnBlameMF(BlameModule &BM,
                                   << TargetName << "\n");
           continue;
 	    }
-        MachineFunction *CalledMF = getCalledMF(BM, TargetName);
-        if (CalledMF) {
-          CalledMF->setCrashOrder(MF.getCrashOrder());
-          runOnBlameMF(BM, *CalledMF, TaintDFG, true, ++levelOfCalledFn,
-                       &TL_Mbb, &MI);
-          CalledMF->setCrashOrder(0);
-          continue;
-        } else {
-          if (!getIsCrashAnalyzerTATool()) {
-            MachineFunction *MFOnDemand = Dec->decompileOnDemand(TargetName);
-            if (!MFOnDemand) {
-              LLVM_DEBUG(llvm::dbgs()
-                         << "#### Callee not found: " << TargetName << "\n";);
+            MachineFunction *CalledMF = getCalledMF(BM, TargetName.str());
+            if (CalledMF) {
+              CalledMF->setCrashOrder(MF.getCrashOrder());
+              runOnBlameMF(BM, *CalledMF, TaintDFG, true, ++levelOfCalledFn,
+                           &TL_Mbb, &MI);
+              CalledMF->setCrashOrder(0);
               continue;
             } else {
-              // Handle it.
-              MFOnDemand->setCrashOrder(MF.getCrashOrder());
-              runOnBlameMF(BM, *MFOnDemand, TaintDFG, true, ++levelOfCalledFn,
-                           &TL_Mbb, &MI);
-              MFOnDemand->setCrashOrder(0);
+              if (!getIsCrashAnalyzerTATool()) {
+                MachineFunction *MFOnDemand =
+                    Dec->decompileOnDemand(TargetName);
+                if (!MFOnDemand) {
+                  LLVM_DEBUG(llvm::dbgs() << "#### Callee not found: "
+                                          << TargetName << "\n";);
+                  continue;
+                } else {
+                  // Handle it.
+                  MFOnDemand->setCrashOrder(MF.getCrashOrder());
+                  runOnBlameMF(BM, *MFOnDemand, TaintDFG, true,
+                               ++levelOfCalledFn, &TL_Mbb, &MI);
+                  MFOnDemand->setCrashOrder(0);
+                }
+              } else {
+                LLVM_DEBUG(llvm::dbgs() << "#### Callee not found: "
+                                        << TargetName << "\n";);
+                continue;
+              }
             }
-          } else {
-            LLVM_DEBUG(
-              llvm::dbgs()
-                  << "#### Callee not found: " << TargetName << "\n";);
-            continue;
-          }
-        }
       }
 
       if (MI.isBranch())

@@ -155,17 +155,18 @@ namespace llvm {
     /// \param SysRoot       The clang system root (value of -isysroot).
     /// \param SDK           The SDK name. On Darwin, this is the last component
     ///                      of the sysroot.
-    DICompileUnit *createCompileUnit(
-        unsigned Lang, DIFile *File, StringRef Producer, bool isOptimized,
-        StringRef Flags, unsigned RV, StringRef SplitName = StringRef(),
-        DICompileUnit::DebugEmissionKind Kind =
-            DICompileUnit::DebugEmissionKind::FullDebug,
-        uint64_t DWOId = 0, bool SplitDebugInlining = true,
-        bool DebugInfoForProfiling = false,
-        DICompileUnit::DebugNameTableKind NameTableKind =
-            DICompileUnit::DebugNameTableKind::Default,
-        bool RangesBaseAddress = false, bool CrashBlamerModule = false,
-        StringRef SysRoot = {}, StringRef SDK = {});
+    DICompileUnit *
+    createCompileUnit(unsigned Lang, DIFile *File, StringRef Producer,
+                      bool isOptimized, StringRef Flags, unsigned RV,
+                      StringRef SplitName = StringRef(),
+                      DICompileUnit::DebugEmissionKind Kind =
+                          DICompileUnit::DebugEmissionKind::FullDebug,
+                      uint64_t DWOId = 0, bool SplitDebugInlining = true,
+                      bool DebugInfoForProfiling = false,
+                      DICompileUnit::DebugNameTableKind NameTableKind =
+                          DICompileUnit::DebugNameTableKind::Default,
+                      bool RangesBaseAddress = false, StringRef SysRoot = {},
+                      StringRef SDK = {}, bool CrashBlamerModule = false);
 
     /// Create a file descriptor to hold debugging information for a file.
     /// \param Filename  File name.

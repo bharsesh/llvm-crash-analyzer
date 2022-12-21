@@ -9,8 +9,9 @@
 #include "Analysis/TaintDataFlowGraph.h"
 
 #include "llvm/IR/DebugInfoMetadata.h"
+#include "llvm/Support/FileSystem.h"
 
-#include "llvm/Support/raw_ostream.h"
+using namespace llvm;
 
 #define DEBUG_TYPE "taint-dfg"
 
@@ -288,7 +289,7 @@ void TaintDataFlowGraph::dump() {
 void TaintDataFlowGraph::printAsDOT(std::string fileName,
     bool Verbose) {
   std::error_code EC;
-  raw_fd_ostream MyDotFile{fileName, EC, sys::fs::OF_Text};
+  raw_fd_ostream MyDotFile(fileName, EC, sys::fs::OF_Text);
 
   if (EC) {
     llvm::errs() << "Could not open file: " << EC.message() << ", " << fileName

@@ -26,6 +26,7 @@
 #include "lldb/Utility/State.h"
 
 #include "llvm/BinaryFormat/ELF.h"
+#include "llvm/Support/Host.h"
 #include "llvm/Support/Threading.h"
 
 #include "Plugins/DynamicLoader/POSIX-DYLD/DynamicLoaderPOSIXDYLD.h"
