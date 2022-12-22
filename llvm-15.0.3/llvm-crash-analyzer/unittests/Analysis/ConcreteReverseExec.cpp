@@ -8,7 +8,6 @@
 
 #include "Analysis/ConcreteReverseExec.h"
 
-#include "gtest/gtest.h"
 #include "llvm/CodeGen/MIRParser/MIRParser.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/MachineFunction.h"
@@ -24,10 +23,11 @@
 #include "llvm/IR/ModuleSlotTracker.h"
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCSymbol.h"
-#include "llvm/Support/TargetRegistry.h"
+#include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
+#include "gtest/gtest.h"
 
 using namespace llvm;
 
@@ -56,7 +56,6 @@ std::unique_ptr<Module> parseMIR(LLVMContext &Context,
                                  std::unique_ptr<MIRParser> &MIR,
                                  const TargetMachine &TM, StringRef MIRCode,
                                  const char *FuncName, MachineModuleInfo &MMI) {
-  SMDiagnostic Diagnostic;
   std::unique_ptr<MemoryBuffer> MBuffer = MemoryBuffer::getMemBuffer(MIRCode);
   MIR = createMIRParser(std::move(MBuffer), Context);
   if (!MIR) return nullptr;
