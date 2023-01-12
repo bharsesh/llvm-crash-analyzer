@@ -48,7 +48,6 @@
 #include <unordered_set>
 
 using namespace llvm;
-using namespace lldb_private;
 
 #define DEBUG_TYPE "llvm-crash-analyzer-decompiler"
 
@@ -100,9 +99,9 @@ llvm::Error crash_analyzer::Decompiler::init(Triple TheTriple) {
   return Error::success();
 }
 
-static std::unique_ptr<llvm::Module>
+static std::unique_ptr<Module>
 createModule(LLVMContext &Context, const DataLayout DL, StringRef InputFile) {
-  auto Mod = std::make_unique<llvm::Module>(InputFile, Context);
+  auto Mod = std::make_unique<Module>(InputFile, Context);
   Mod->setDataLayout(DL);
   return Mod;
 }
@@ -210,7 +209,7 @@ MachineInstr *crash_analyzer::Decompiler::addNoop(MachineFunction *MF,
                                                   DebugLoc *Loc) {
   auto TII = MF->getSubtarget().getInstrInfo();
   llvm::MCInst Inst;
-  Inst = TII->getNop();
+  TII->getNop();
   if (const unsigned NoopOpcode = Inst.getOpcode()) {
     const MCInstrDesc &MCID = MII->get(NoopOpcode);
     MachineInstrBuilder Builder = BuildMI(MBB, DebugLoc(), MCID);
@@ -276,8 +275,8 @@ bool crash_analyzer::Decompiler::DecodeIntrsToMIR(
   Target.ReadMemory(FuncStart, BufferSp->GetBytes(), BufferSp->GetByteSize(),
                     Err);
 
-  DataExtractor Extractor(BufferSp, Target.GetByteOrder(),
-                          Target.GetAddressByteSize());
+  lldb_private::DataExtractor Extractor(BufferSp, Target.GetByteOrder(),
+                                        Target.GetAddressByteSize());
   Disassembler_sp->DecodeInstructions(FuncLoadAddr, Extractor, 0,
                                       Instructions.GetSize(), false, false);
 
@@ -527,7 +526,7 @@ llvm::Error crash_analyzer::Decompiler::run(
     if (Frame.second.IsInlined()) {
       auto TII = MF->getSubtarget().getInstrInfo();
       MCInst NopInst;
-      NopInst = TII->getNop();
+      TII->getNop();
       const unsigned Opcode = NopInst.getOpcode();
       const MCInstrDesc &MCID = MII->get(Opcode);
       BuildMI(MBB, DebugLoc(), MCID);
@@ -626,7 +625,7 @@ crash_analyzer::Decompiler::decompileInlinedFnOutOfbt(StringRef TargetName,
 
   auto TII = MF->getSubtarget().getInstrInfo();
   MCInst NopInst;
-  NopInst = TII->getNop();
+  TII->getNop();
   const unsigned Opcode = NopInst.getOpcode();
   const MCInstrDesc &MCID = MII->get(Opcode);
   BuildMI(MBB, DebugLoc(), MCID);
