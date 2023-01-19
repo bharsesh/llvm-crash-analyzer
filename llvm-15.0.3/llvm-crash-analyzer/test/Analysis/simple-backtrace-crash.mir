@@ -221,7 +221,7 @@ body:             |
     crash-start MOV32mi $rax, 1, $noreg, 0, $noreg, 0, debug-location !DILocation(line: 30, column: 8, scope: !6)
     $eax = MOV32rm $rbp, 1, $noreg, -4, $noreg, debug-location !DILocation(line: 31, column: 1, scope: !6)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 31, column: 1, scope: !6)
-    RETQ debug-location !DILocation(line: 31, column: 1, scope: !6)
+    RET64 debug-location !DILocation(line: 31, column: 1, scope: !6)
 
 ...
 ---
@@ -387,7 +387,7 @@ body:             |
     $eax = MOV32rr $ecx, debug-location !DILocation(line: 27, column: 1, scope: !5)
     $rsp = ADD64ri8 $rsp, 32, implicit-def $eflags, debug-location !DILocation(line: 27, column: 1, scope: !5)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 27, column: 1, scope: !5)
-    RETQ debug-location !DILocation(line: 27, column: 1, scope: !5)
+    RET64 debug-location !DILocation(line: 27, column: 1, scope: !5)
 
 ...
 ---
@@ -518,7 +518,7 @@ body:             |
     $xmm0 = crash-start MOVSSrm $rbp, 1, $noreg, -8, $noreg, debug-location !DILocation(line: 12, column: 12, scope: !2)
     $rsp = ADD64ri8 $rsp, 16, implicit-def $eflags, debug-location !DILocation(line: 12, column: 3, scope: !2)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 12, column: 3, scope: !2)
-    RETQ debug-location !DILocation(line: 12, column: 3, scope: !2)
+    RET64 debug-location !DILocation(line: 12, column: 3, scope: !2)
 
 ...
 ---
@@ -656,7 +656,7 @@ body:             |
     $eax = MOV32rr $ecx, debug-location !DILocation(line: 36, column: 3, scope: !7)
     $rsp = ADD64ri8 $rsp, 16, implicit-def $eflags, debug-location !DILocation(line: 36, column: 3, scope: !7)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 36, column: 3, scope: !7)
-    RETQ debug-location !DILocation(line: 36, column: 3, scope: !7)
+    RET64 debug-location !DILocation(line: 36, column: 3, scope: !7)
 
 ...
 ---

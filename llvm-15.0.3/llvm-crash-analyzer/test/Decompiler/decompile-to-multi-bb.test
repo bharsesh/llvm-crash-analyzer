@@ -43,4 +43,4 @@
 # CHECK:  successors: %bb.5(0x80000000)
 # CHECK:  JMP_4 %bb.5
 # CHECK:  bb.5:
-# CHECK:  RETQ
+# CHECK:  RET64

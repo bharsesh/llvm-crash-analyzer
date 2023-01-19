@@ -33,4 +33,4 @@
 # CHECK:  bb.3:
 # CHECK:  successors: %bb.4(0x80000000)
 # CHECK:  bb.4:
-# CHECK:  RETQ
+# CHECK:  RET64

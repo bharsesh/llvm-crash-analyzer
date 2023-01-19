@@ -194,7 +194,7 @@ body:             |
     VMOVDQUYmr $rdi, 1, $rdx, -32, $noreg, $ymm0
     VMOVDQUYmr $rdi, 1, $noreg, 0, $noreg, $ymm0
     VZEROUPPER implicit-def $ymm0, implicit-def $ymm1, implicit-def $ymm2, implicit-def $ymm3, implicit-def $ymm4, implicit-def $ymm5, implicit-def $ymm6, implicit-def $ymm7, implicit-def $ymm8, implicit-def $ymm9, implicit-def $ymm10, implicit-def $ymm11, implicit-def $ymm12, implicit-def $ymm13, implicit-def $ymm14, implicit-def $ymm15
-    RETQ
+    RET64
   
   bb.3:
     successors: %bb.4(0x80000000)
@@ -219,7 +219,7 @@ body:             |
     VMOVDQUYmr $rdi, 1, $rdx, -32, $noreg, $ymm0
     VMOVDQUYmr $rdi, 1, $rdx, -64, $noreg, $ymm0
     VZEROUPPER implicit-def $ymm0, implicit-def $ymm1, implicit-def $ymm2, implicit-def $ymm3, implicit-def $ymm4, implicit-def $ymm5, implicit-def $ymm6, implicit-def $ymm7, implicit-def $ymm8, implicit-def $ymm9, implicit-def $ymm10, implicit-def $ymm11, implicit-def $ymm12, implicit-def $ymm13, implicit-def $ymm14, implicit-def $ymm15
-    RETQ
+    RET64
   
   bb.6:
     successors: %bb.7(0x80000000)
@@ -256,7 +256,7 @@ body:             |
     successors: %bb.9(0x80000000)
   
     VZEROUPPER implicit-def $ymm0, implicit-def $ymm1, implicit-def $ymm2, implicit-def $ymm3, implicit-def $ymm4, implicit-def $ymm5, implicit-def $ymm6, implicit-def $ymm7, implicit-def $ymm8, implicit-def $ymm9, implicit-def $ymm10, implicit-def $ymm11, implicit-def $ymm12, implicit-def $ymm13, implicit-def $ymm14, implicit-def $ymm15
-    RETQ
+    RET64
   
   bb.9:
     successors: %bb.10(0x40000000), %bb.16(0x40000000)
@@ -302,7 +302,7 @@ body:             |
     successors: %bb.16(0x80000000)
   
     VZEROUPPER implicit-def $ymm0, implicit-def $ymm1, implicit-def $ymm2, implicit-def $ymm3, implicit-def $ymm4, implicit-def $ymm5, implicit-def $ymm6, implicit-def $ymm7, implicit-def $ymm8, implicit-def $ymm9, implicit-def $ymm10, implicit-def $ymm11, implicit-def $ymm12, implicit-def $ymm13, implicit-def $ymm14, implicit-def $ymm15
-    RETQ
+    RET64
   
   bb.16:
     successors: %bb.17(0x80000000)
@@ -311,7 +311,7 @@ body:             |
     crash-start VMOVDQUmr $rdi, 1, $rdx, -16, $noreg, $xmm0
     VMOVDQUmr $rdi, 1, $noreg, 0, $noreg, $xmm0
     VZEROUPPER implicit-def $ymm0, implicit-def $ymm1, implicit-def $ymm2, implicit-def $ymm3, implicit-def $ymm4, implicit-def $ymm5, implicit-def $ymm6, implicit-def $ymm7, implicit-def $ymm8, implicit-def $ymm9, implicit-def $ymm10, implicit-def $ymm11, implicit-def $ymm12, implicit-def $ymm13, implicit-def $ymm14, implicit-def $ymm15
-    RETQ
+    RET64
   
   bb.17:
     successors: %bb.18(0x80000000)
@@ -320,7 +320,7 @@ body:             |
     MOV64mr $rdi, 1, $rdx, -8, $noreg, $rcx
     MOV64mr $rdi, 1, $noreg, 0, $noreg, $rcx
     VZEROUPPER implicit-def $ymm0, implicit-def $ymm1, implicit-def $ymm2, implicit-def $ymm3, implicit-def $ymm4, implicit-def $ymm5, implicit-def $ymm6, implicit-def $ymm7, implicit-def $ymm8, implicit-def $ymm9, implicit-def $ymm10, implicit-def $ymm11, implicit-def $ymm12, implicit-def $ymm13, implicit-def $ymm14, implicit-def $ymm15
-    RETQ
+    RET64
   
   bb.18:
     successors: %bb.19(0x80000000)
@@ -329,7 +329,7 @@ body:             |
     MOV32mr $rdi, 1, $rdx, -4, $noreg, $ecx
     MOV32mr $rdi, 1, $noreg, 0, $noreg, $ecx
     VZEROUPPER implicit-def $ymm0, implicit-def $ymm1, implicit-def $ymm2, implicit-def $ymm3, implicit-def $ymm4, implicit-def $ymm5, implicit-def $ymm6, implicit-def $ymm7, implicit-def $ymm8, implicit-def $ymm9, implicit-def $ymm10, implicit-def $ymm11, implicit-def $ymm12, implicit-def $ymm13, implicit-def $ymm14, implicit-def $ymm15
-    RETQ
+    RET64
   
   bb.19:
     liveins: $rdi, $rdx, $cx
@@ -337,7 +337,7 @@ body:             |
     MOV16mr $rdi, 1, $rdx, -2, $noreg, $cx
     MOV16mr $rdi, 1, $noreg, 0, $noreg, $cx
     VZEROUPPER implicit-def $ymm0, implicit-def $ymm1, implicit-def $ymm2, implicit-def $ymm3, implicit-def $ymm4, implicit-def $ymm5, implicit-def $ymm6, implicit-def $ymm7, implicit-def $ymm8, implicit-def $ymm9, implicit-def $ymm10, implicit-def $ymm11, implicit-def $ymm12, implicit-def $ymm13, implicit-def $ymm14, implicit-def $ymm15
-    RETQ
+    RET64
 
 ...
 ---
@@ -474,7 +474,7 @@ body:             |
     $rsp = crash-start ADD64ri8 $rsp, 8, implicit-def $eflags
   
   bb.2:
-    RETQ debug-location !DILocation(line: 9, column: 1, scope: !2)
+    RET64 debug-location !DILocation(line: 9, column: 1, scope: !2)
 
 ...
 ---
@@ -602,6 +602,6 @@ body:             |
     CALL64pcrel32 @fillbuffer, csr_64, implicit $rsp, implicit $ssp, implicit-def $eax, implicit-def $eax, debug-location !DILocation(line: 13, column: 2, scope: !5)
     $eax = crash-start XOR32rr undef $eax, undef $eax, implicit-def $eflags, debug-location !DILocation(line: 14, column: 2, scope: !5)
     $rcx = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 14, column: 2, scope: !5)
-    RETQ debug-location !DILocation(line: 14, column: 2, scope: !5)
+    RET64 debug-location !DILocation(line: 14, column: 2, scope: !5)
 
 ...

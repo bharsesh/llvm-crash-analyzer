@@ -168,5 +168,5 @@ body:             |
     $edx = ADD32ri8 $edx, 2, implicit-def $eflags
     MOV32mr $rbp, 1, $noreg, -20, $noreg, $edx
     $rbp = POP64r implicit-def $rsp, implicit $rsp
-    RETQ
+    RET64
 ...

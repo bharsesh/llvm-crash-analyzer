@@ -215,7 +215,7 @@ body:             |
     CALL64pcrel32 @printf, csr_64, implicit $rsp, implicit $ssp, debug-location !DILocation(line: 12, column: 3, scope: !2)
     $rsp = ADD64ri8 $rsp, 16, implicit-def $eflags, debug-location !DILocation(line: 13, column: 1, scope: !2)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 13, column: 1, scope: !2)
-    RETQ debug-location !DILocation(line: 13, column: 1, scope: !2)
+    RET64 debug-location !DILocation(line: 13, column: 1, scope: !2)
 
 ...
 ---
@@ -348,7 +348,7 @@ body:             |
     $eax = crash-start XOR32rr undef $eax, undef $eax, implicit-def $eflags
     $rsp = ADD64ri8 $rsp, 16, implicit-def $eflags, debug-location !DILocation(line: 18, column: 2, scope: !5)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 18, column: 2, scope: !5)
-    RETQ debug-location !DILocation(line: 18, column: 2, scope: !5)
+    RET64 debug-location !DILocation(line: 18, column: 2, scope: !5)
 
 ...
 ---

@@ -176,7 +176,7 @@ body:             |
     $rax = MOV64rm $rbp, 1, $noreg, -8, $noreg, debug-location !DILocation(line: 2, column: 4, scope: !5)
     crash-start MOV32mi $rax, 1, $noreg, 0, $noreg, 0, debug-location !DILocation(line: 2, column: 15, scope: !5)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 3, column: 1, scope: !5)
-    RETQ debug-location !DILocation(line: 3, column: 1, scope: !5)
+    RET64 debug-location !DILocation(line: 3, column: 1, scope: !5)
 
 ...
 ---
@@ -308,7 +308,7 @@ body:             |
     CALL64pcrel32 @f3, csr_64, implicit $rsp, implicit $ssp, debug-location !DILocation(line: 7, column: 3, scope: !2)
     $rsp = crash-start ADD64ri8 $rsp, 16, implicit-def $eflags, debug-location !DILocation(line: 8, column: 1, scope: !2)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 8, column: 1, scope: !2)
-    RETQ debug-location !DILocation(line: 8, column: 1, scope: !2)
+    RET64 debug-location !DILocation(line: 8, column: 1, scope: !2)
 
 ...
 ---
@@ -440,6 +440,6 @@ body:             |
     $eax = crash-start XOR32rr undef $eax, undef $eax, implicit-def $eflags, debug-location !DILocation(line: 13, column: 3, scope: !6)
     $rsp = ADD64ri8 $rsp, 16, implicit-def $eflags, debug-location !DILocation(line: 14, column: 3, scope: !6)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 14, column: 3, scope: !6)
-    RETQ debug-location !DILocation(line: 14, column: 3, scope: !6)
+    RET64 debug-location !DILocation(line: 14, column: 3, scope: !6)
 
 ...

@@ -226,7 +226,7 @@ body:             |
     MOV32mr $rbp, 1, $noreg, -12, $noreg, $ecx, debug-location !DILocation(line: 14, column: 5, scope: !2)
     $eax = MOV32rm $rbp, 1, $noreg, -12, $noreg, debug-location !DILocation(line: 16, column: 10, scope: !2)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 16, column: 3, scope: !2)
-    RETQ debug-location !DILocation(line: 16, column: 3, scope: !2)
+    RET64 debug-location !DILocation(line: 16, column: 3, scope: !2)
 
 ...
 ---
@@ -360,6 +360,6 @@ body:             |
     $eax = MOV32rr $ecx, debug-location !DILocation(line: 23, column: 3, scope: !5)
     $rsp = ADD64ri8 $rsp, 16, implicit-def $eflags, debug-location !DILocation(line: 23, column: 3, scope: !5)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 23, column: 3, scope: !5)
-    RETQ debug-location !DILocation(line: 23, column: 3, scope: !5)
+    RET64 debug-location !DILocation(line: 23, column: 3, scope: !5)
 
 ...

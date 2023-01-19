@@ -112,7 +112,7 @@ public:
     NoMerge = 1 << 15,     // Passes that drop source location info
                            // (e.g. branch folding) should skip
                            // this instruction.
-    CrashStart = 1 << 15,  // First Instruction that needs to be
+    CrashStart = 1 << 16,  // First Instruction that needs to be
                            // analysed via crash-blamer.
   };
 
@@ -124,9 +124,9 @@ private:
   MachineOperand *Operands = nullptr;   // Pointer to the first operand.
   unsigned NumOperands = 0;             // Number of operands on instruction.
 
-  uint16_t Flags = 0;                   // Various bits of additional
-                                        // information about machine
-                                        // instruction.
+  uint32_t Flags = 0; // Various bits of additional
+                      // information about machine
+                      // instruction.
 
   uint8_t AsmPrinterFlags = 0;          // Various bits of information used by
                                         // the AsmPrinter to emit helpful
@@ -326,9 +326,7 @@ public:
   }
 
   /// Return the MI flags bitvector.
-  uint16_t getFlags() const {
-    return Flags;
-  }
+  uint32_t getFlags() const { return Flags; }
 
   /// Return whether an MI flag is set.
   bool getFlag(MIFlag Flag) const {
@@ -336,9 +334,7 @@ public:
   }
 
   /// Set a MI flag.
-  void setFlag(MIFlag Flag) {
-    Flags |= (uint16_t)Flag;
-  }
+  void setFlag(MIFlag Flag) { Flags |= (uint32_t)Flag; }
 
   void setFlags(unsigned flags) {
     // Filter out the automatically maintained flags.
@@ -347,9 +343,7 @@ public:
   }
 
   /// clearFlag - Clear a MI flag.
-  void clearFlag(MIFlag Flag) {
-    Flags &= ~((uint16_t)Flag);
-  }
+  void clearFlag(MIFlag Flag) { Flags &= ~((uint32_t)Flag); }
 
   /// Return true if MI is in a bundle (but not the first MI in a bundle).
   ///
@@ -1791,9 +1785,9 @@ public:
   /// Return the MIFlags which represent both MachineInstrs. This
   /// should be used when merging two MachineInstrs into one. This routine does
   /// not modify the MIFlags of this MachineInstr.
-  uint16_t mergeFlagsWith(const MachineInstr& Other) const;
+  uint32_t mergeFlagsWith(const MachineInstr &Other) const;
 
-  static uint16_t copyFlagsFromInstruction(const Instruction &I);
+  static uint32_t copyFlagsFromInstruction(const Instruction &I);
 
   /// Copy all flags to MachineInst MIFlags
   void copyIRFlags(const Instruction &I);

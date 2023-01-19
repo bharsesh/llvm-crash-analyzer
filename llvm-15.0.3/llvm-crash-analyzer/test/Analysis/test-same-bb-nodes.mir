@@ -157,6 +157,6 @@ body:             |
     $rcx = MOV64rm $rbp, 1, $noreg, -16, $noreg, debug-location !DILocation(line: 3, column: 4, scope: !2)
     crash-start MOV32mi $rcx, 1, $noreg, 0, $noreg, 100, debug-location !DILocation(line: 3, column: 8, scope: !2)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 4, column: 3, scope: !2)
-    RETQ debug-location !DILocation(line: 4, column: 3, scope: !2)
+    RET64 debug-location !DILocation(line: 4, column: 3, scope: !2)
 
 ...
