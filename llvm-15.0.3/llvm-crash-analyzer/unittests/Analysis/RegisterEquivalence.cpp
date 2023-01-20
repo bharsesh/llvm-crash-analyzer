@@ -152,7 +152,7 @@ body:             |
     $eax = MOV32ri 111111, debug-location !DILocation(line: 4, column: 4, scope: !5)
     $rax = MOV64rm $rax, 1, $noreg, -8, $noreg, debug-location !DILocation(line: 4, column: 4, scope: !5)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 5, column: 1, scope: !5)
-    crash-start RETQ debug-location !DILocation(line: 5, column: 1, scope: !5)
+    crash-start RET64 debug-location !DILocation(line: 5, column: 1, scope: !5)
 
 ...
 )MIR";

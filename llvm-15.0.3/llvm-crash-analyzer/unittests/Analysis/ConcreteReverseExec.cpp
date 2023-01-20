@@ -223,7 +223,7 @@ body:             |
 
     $eax = MOV32rm $rbp, 1, $noreg, -12, $noreg, debug-location !DILocation(line: 10, column: 10, scope: !2)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 10, column: 3, scope: !2)
-    RETQ debug-location !DILocation(line: 10, column: 3, scope: !2)
+    RET64 debug-location !DILocation(line: 10, column: 3, scope: !2)
 )MIR";
 
   LLVMContext Context;

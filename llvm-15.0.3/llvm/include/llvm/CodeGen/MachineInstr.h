@@ -113,7 +113,7 @@ public:
                            // (e.g. branch folding) should skip
                            // this instruction.
     CrashStart = 1 << 16,  // First Instruction that needs to be
-                           // analysed via crash-blamer.
+                           // analysed via llvm-crash-analyzer.
   };
 
 private:

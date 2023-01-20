@@ -229,7 +229,7 @@ body:             |
     $ecx = crash-start ADD32rm $ecx, $rax, 1, $noreg, 0, $noreg, implicit-def $eflags, debug-location !DILocation(line: 12, column: 13, scope: !2)
     $eax = MOV32rr $ecx, debug-location !DILocation(line: 12, column: 2, scope: !2)
     $rbp = POP64r implicit-def $rsp, implicit $rsp, debug-location !DILocation(line: 12, column: 2, scope: !2)
-    RETQ debug-location !DILocation(line: 12, column: 2, scope: !2)
+    RET64 debug-location !DILocation(line: 12, column: 2, scope: !2)
 
 ...
 )MIR";

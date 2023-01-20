@@ -209,7 +209,7 @@ MachineInstr *crash_analyzer::Decompiler::addNoop(MachineFunction *MF,
                                                   DebugLoc *Loc) {
   auto TII = MF->getSubtarget().getInstrInfo();
   llvm::MCInst Inst;
-  TII->getNop();
+  Inst = TII->getNop();
   if (const unsigned NoopOpcode = Inst.getOpcode()) {
     const MCInstrDesc &MCID = MII->get(NoopOpcode);
     MachineInstrBuilder Builder = BuildMI(MBB, DebugLoc(), MCID);
@@ -526,7 +526,7 @@ llvm::Error crash_analyzer::Decompiler::run(
     if (Frame.second.IsInlined()) {
       auto TII = MF->getSubtarget().getInstrInfo();
       MCInst NopInst;
-      TII->getNop();
+      NopInst = TII->getNop();
       const unsigned Opcode = NopInst.getOpcode();
       const MCInstrDesc &MCID = MII->get(Opcode);
       BuildMI(MBB, DebugLoc(), MCID);
@@ -625,7 +625,7 @@ crash_analyzer::Decompiler::decompileInlinedFnOutOfbt(StringRef TargetName,
 
   auto TII = MF->getSubtarget().getInstrInfo();
   MCInst NopInst;
-  TII->getNop();
+  NopInst = TII->getNop();
   const unsigned Opcode = NopInst.getOpcode();
   const MCInstrDesc &MCID = MII->get(Opcode);
   BuildMI(MBB, DebugLoc(), MCID);

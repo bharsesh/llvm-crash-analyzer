@@ -117,6 +117,7 @@ struct DestSourcePair {
                  MachineOperand *SrcOffsetReg = nullptr)
       : Destination(Dest), Source(Src), DestOffset(DestOff), SrcOffset(SrcOff),
         Source2(Src2), Src2Offset(Src2Off), DestScaledIndex(DestScaledIndex),
+        DestOffsetReg(DstOffset), SrcScaledIndex(SrcScaledIndex),
         SrcOffsetReg(SrcOffsetReg), SizeFactor(Size) {}
 
   DestSourcePair(const MachineOperand *Dest, const MachineOperand *Src,
