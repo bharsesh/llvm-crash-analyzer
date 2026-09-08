@@ -114,6 +114,8 @@ public:
                              // this instruction.
     Unpredictable = 1 << 16, // Instruction with unpredictable condition.
     NoConvergent = 1 << 17,  // Call does not require convergence guarantees.
+    CrashStart = 1 << 18,    // First Instruction that needs to be
+                             // analysed via llvm-crash-analyzer.
   };
 
 private:

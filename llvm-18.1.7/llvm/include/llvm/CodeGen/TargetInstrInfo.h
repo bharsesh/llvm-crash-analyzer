@@ -69,11 +69,81 @@ template <class T> class SmallVectorImpl;
 using ParamLoadedValue = std::pair<MachineOperand, DIExpression*>;
 
 struct DestSourcePair {
-  const MachineOperand *Destination;
-  const MachineOperand *Source;
+  const MachineOperand *Destination = nullptr;
+  const MachineOperand *Source = nullptr;
+
+  // Used if one of the operands is a memory operand.
+  std::optional<int64_t> DestOffset;
+  std::optional<int64_t> SrcOffset;
+
+  // Certain instructions (e.g., CMP) can have more than one source operand.
+  const MachineOperand *Source2 = nullptr;
+  std::optional<int64_t> Src2Offset;
+
+  // Value in immediate instructions
+  std::optional<int64_t> ImmValue;
+
+  // Used for scaled-index addressing mode.
+  // e.g.:
+  //   movb $0x41,(%rax,%rcx,1) == rax + rcx * 1 = $0x41
+  MachineOperand *DestScale = nullptr;
+  MachineOperand *DestIndexReg = nullptr;
+
+  // mov (%rax,%rcx,4),%esi  ==> esi = rax + rcx * 4
+  MachineOperand *SrcScale = nullptr;
+  MachineOperand *SrcIndexReg = nullptr;
+
+  // Size Factor used in Array Access
+  int64_t SizeFactor = 0;
 
   DestSourcePair(const MachineOperand &Dest, const MachineOperand &Src)
       : Destination(&Dest), Source(&Src) {}
+
+  DestSourcePair(const MachineOperand &Dest, int64_t Offset,
+                 const MachineOperand &Src)
+      : Destination(&Dest), Source(&Src), DestOffset(Offset) {}
+
+  DestSourcePair(const MachineOperand &Dest, const MachineOperand &Src,
+                 int64_t Offset)
+      : Destination(&Dest), Source(&Src), SrcOffset(Offset) {}
+
+  DestSourcePair(const MachineOperand &Dest, MachineOperand &DestScale,
+                 MachineOperand &DestInd, const MachineOperand &Src)
+      : Destination(&Dest), Source(&Src), DestScale(&DestScale),
+        DestIndexReg(&DestInd) {
+    // Invalidate index-reg if it is $noreg.
+    if (DestIndexReg && DestIndexReg->isReg() && DestIndexReg->isReg() == 0)
+      DestIndexReg = nullptr;
+  }
+
+  // Set All Fields in the structure.
+  DestSourcePair(const MachineOperand *Dest, const MachineOperand *Src,
+                 std::optional<int64_t> DestOff, std::optional<int64_t> SrcOff,
+                 const MachineOperand *Src2, std::optional<int64_t> Src2Off,
+                 MachineOperand *DestScale, MachineOperand *DstIndex,
+                 int64_t Size, MachineOperand *SrcScale = nullptr,
+                 MachineOperand *SrcIndex = nullptr)
+      : Destination(Dest), Source(Src), DestOffset(DestOff), SrcOffset(SrcOff),
+        Source2(Src2), Src2Offset(Src2Off), DestScale(DestScale),
+        DestIndexReg(DstIndex), SrcScale(SrcScale), SrcIndexReg(SrcIndex),
+        SizeFactor(Size) {
+    // Invalidate index-reg if it is $noreg.
+    if (SrcIndexReg && SrcIndexReg->isReg() && SrcIndexReg->isReg() == 0)
+      SrcIndexReg = nullptr;
+    if (DestIndexReg && DestIndexReg->isReg() && DestIndexReg->isReg() == 0)
+      DestIndexReg = nullptr;
+  }
+
+  DestSourcePair(const MachineOperand *Dest, const MachineOperand *Src,
+                 std::optional<int64_t> DestOff, std::optional<int64_t> SrcOff,
+                 std::optional<int64_t> ImmVal, MachineOperand *DestScale = nullptr,
+                 MachineOperand *DstIndex = nullptr)
+      : Destination(Dest), Source(Src), DestOffset(DestOff), SrcOffset(SrcOff),
+        ImmValue(ImmVal), DestScale(DestScale), DestIndexReg(DstIndex) {
+    // Invalidate index-reg if it is $noreg.
+    if (DestIndexReg && DestIndexReg->isReg() && DestIndexReg->isReg() == 0)
+      DestIndexReg = nullptr;
+  }
 };
 
 /// Used to describe a register and immediate addition.
@@ -291,6 +361,9 @@ public:
                                              int &FrameIndex) const {
     return 0;
   }
+
+  virtual bool isLoad(const MachineInstr &MI) const { return false; }
+  virtual bool isStore(const MachineInstr &MI) const { return false; }
 
   /// If the specified machine instruction has a load from a stack slot,
   /// return true along with the FrameIndices of the loaded stack slot and the
@@ -1072,6 +1145,27 @@ public:
     const MachineOperand *SrcRegOp = DestSrc->Source;
     return !DestRegOp->getSubReg() && !SrcRegOp->getSubReg();
   }
+
+  /// Check if the instruction is a noop.
+  virtual bool isNoopInstr(const MachineInstr &MI) const { return false; }
+
+  /// Check if the instruction is a xor that sets a reg to zero.
+  virtual bool isXORSimplifiedSetToZero(const MachineInstr &MI) const {
+    return false;
+  }
+
+  /// Return both source and destination operands for specified instruction,
+  /// if any.
+  virtual std::optional<DestSourcePair>
+  getDestAndSrc(const MachineInstr &MI) const {
+    return std::nullopt;
+  }
+
+  /// Check if the instruction is push/pop.
+  virtual bool isPush(const MachineInstr &MI) const { return false; }
+
+  virtual bool isPop(const MachineInstr &MI) const { return false; }
+
 
   /// If the specific machine instruction is an instruction that adds an
   /// immediate value and a register, and stores the result in the given

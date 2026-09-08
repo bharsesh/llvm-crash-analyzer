@@ -1717,9 +1717,15 @@ void Target::SymbolsDidLoad(ModuleList &module_list) {
         runtime->SymbolsDidLoad(module_list);
       }
     }
+    // No need to update breakpoints if it the process was reconstructed
+    // from a core-file.
+    // It avoids: 1) warning: failed to set breakpoint site at...
+    //            2) error: elf-core does not support enabling breakpoints
+    if (strcmp(m_process_sp->GetPluginName().str().c_str(), "elf-core")) {
+      m_breakpoint_list.UpdateBreakpoints(module_list, true, false);
+      m_internal_breakpoint_list.UpdateBreakpoints(module_list, true, false);
+    }
 
-    m_breakpoint_list.UpdateBreakpoints(module_list, true, false);
-    m_internal_breakpoint_list.UpdateBreakpoints(module_list, true, false);
     auto data_sp =
         std::make_shared<TargetEventData>(shared_from_this(), module_list);
     BroadcastEvent(eBroadcastBitSymbolsLoaded, data_sp);

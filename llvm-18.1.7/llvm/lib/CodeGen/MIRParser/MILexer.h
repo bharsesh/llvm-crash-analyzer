@@ -137,6 +137,7 @@ struct MIToken {
     kw_machine_block_address_taken,
     kw_call_frame_size,
     kw_noconvergent,
+    kw_crash_start,
 
     // Metadata types.
     kw_distinct,
