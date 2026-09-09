@@ -44,6 +44,7 @@ export CXX=/auto/binos-tools/llvm18/llvm-18.0-p2/bin/clang++
 export LD_LIBRARY_PATH=/auto/binos-tools/llvm18/llvm-18.0-p2/lib:$LD_LIBRARY_PATH
 /auto/binos-tools/llvm40/tools/cmake_326/bin/cmake -G "Ninja" -DLLVM_ENABLE_PROJECTS="clang;lldb;llvm-crash-analyzer" -DLLVM_ENABLE_LIBCXX=ON ../llvm -DLLDB_TEST_COMPILER=$CC -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DLLVM_ENABLE_ASSERTIONS=ON
 /auto/binos-tools/llvm40/tools/ninja/ninja -j8 
+export LD_LIBRARY_PATH=./lib:$LD_LIBRARY_PATH
 /auto/binos-tools/llvm40/tools/ninja/ninja -j8  check-llvm-crash-analyzer
 
 
