@@ -21,8 +21,8 @@ class GDBRemoteCommunicationServerLLCS : public GDBRemoteCommunicationServerLLGS
 public:
   GDBRemoteCommunicationServerLLCS(
     MainLoop &mainloop,
-    const NativeProcessProtocol::Factory &process_factory) : 
-  GDBRemoteCommunicationServerLLGS(mainloop, process_factory){
+    NativeProcessProtocol::Manager &process_manager) :
+  GDBRemoteCommunicationServerLLGS(mainloop, process_manager){
      RegisterPacketHandlers_LLCS();
   };
 

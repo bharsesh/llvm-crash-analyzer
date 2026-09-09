@@ -34,6 +34,7 @@
 #include "llvm/Option/OptTable.h"
 #include "llvm/Option/Option.h"
 #include "llvm/Support/Errno.h"
+#include "llvm/Support/Error.h"
 #include "llvm/Support/WithColor.h"
 
 #include "GDBRemoteCommunicationServerCS.h"
@@ -67,26 +68,28 @@ using namespace lldb::crash_analyzer;
 
 namespace {
 #if defined(__linux__)
-typedef process_linux::NativeProcessLinux::Factory NativeProcessFactory;
+typedef process_linux::NativeProcessLinux::Manager NativeProcessManager;
 #elif defined(__FreeBSD__)
-typedef process_freebsd::NativeProcessFreeBSD::Factory NativeProcessFactory;
+typedef process_freebsd::NativeProcessFreeBSD::Manager NativeProcessManager;
 #elif defined(__NetBSD__)
-typedef process_netbsd::NativeProcessNetBSD::Factory NativeProcessFactory;
+typedef process_netbsd::NativeProcessNetBSD::Manager NativeProcessManager;
 #elif defined(_WIN32)
-typedef NativeProcessWindows::Factory NativeProcessFactory;
+typedef NativeProcessWindows::Manager NativeProcessManager;
 #else
 // Dummy implementation to make sure the code compiles
-class NativeProcessFactory : public NativeProcessProtocol::Factory {
+class NativeProcessManager : public NativeProcessProtocol::Manager {
 public:
+  NativeProcessManager(MainLoop &mainloop)
+      : NativeProcessProtocol::Manager(mainloop) {}
+
   llvm::Expected<std::unique_ptr<NativeProcessProtocol>>
   Launch(ProcessLaunchInfo &launch_info,
-         NativeProcessProtocol::NativeDelegate &delegate,
-         MainLoop &mainloop) const override {
+         NativeProcessProtocol::NativeDelegate &native_delegate) override {
     llvm_unreachable("Not implemented");
   }
   llvm::Expected<std::unique_ptr<NativeProcessProtocol>>
-  Attach(lldb::pid_t pid, NativeProcessProtocol::NativeDelegate &delegate,
-         MainLoop &mainloop) const override {
+  Attach(lldb::pid_t pid,
+         NativeProcessProtocol::NativeDelegate &native_delegate) override {
     llvm_unreachable("Not implemented");
   }
 };
@@ -289,34 +292,31 @@ void ConnectToRemote(MainLoop &mainloop,
 }
 
 namespace {
+using namespace llvm::opt;
+
 enum ID {
   OPT_INVALID = 0, // This is not an option ID.
-#define OPTION(PREFIX, NAME, ID, KIND, GROUP, ALIAS, ALIASARGS, FLAGS, PARAM,  \
-               HELPTEXT, METAVAR, VALUES)                                      \
-  OPT_##ID,
+#define OPTION(...) LLVM_MAKE_OPT_ID(__VA_ARGS__),
 #include "LLGSOptions.inc"
 #undef OPTION
 };
 
-#define PREFIX(NAME, VALUE) const char *const NAME[] = VALUE;
+#define PREFIX(NAME, VALUE)                                                    \
+  constexpr llvm::StringLiteral NAME##_init[] = VALUE;                         \
+  constexpr llvm::ArrayRef<llvm::StringLiteral> NAME(                          \
+      NAME##_init, std::size(NAME##_init) - 1);
 #include "LLGSOptions.inc"
 #undef PREFIX
 
-const opt::OptTable::Info InfoTable[] = {
-#define OPTION(PREFIX, NAME, ID, KIND, GROUP, ALIAS, ALIASARGS, FLAGS, PARAM,  \
-               HELPTEXT, METAVAR, VALUES)                                      \
-  {                                                                            \
-      PREFIX,      NAME,      HELPTEXT,                                        \
-      METAVAR,     OPT_##ID,  opt::Option::KIND##Class,                        \
-      PARAM,       FLAGS,     OPT_##GROUP,                                     \
-      OPT_##ALIAS, ALIASARGS, VALUES},
+static constexpr opt::OptTable::Info InfoTable[] = {
+#define OPTION(...) LLVM_CONSTRUCT_OPT_INFO(__VA_ARGS__),
 #include "LLGSOptions.inc"
 #undef OPTION
 };
 
-class LLGSOptTable : public opt::OptTable {
+class LLGSOptTable : public opt::GenericOptTable {
 public:
-  LLGSOptTable() : OptTable(InfoTable) {}
+  LLGSOptTable() : opt::GenericOptTable(InfoTable) {}
 
   void PrintHelp(llvm::StringRef Name) {
     std::string Usage =
@@ -468,8 +468,8 @@ int main_gdbserver(int argc, char *argv[]) {
     return 1;
   }
 
-  NativeProcessFactory factory;
-  GDBRemoteCommunicationServerLLCS gdb_server(mainloop, factory);
+  NativeProcessManager manager(mainloop);
+  GDBRemoteCommunicationServerLLCS gdb_server(mainloop, manager);
 
   llvm::StringRef host_and_port;
   if (!Inputs.empty()) {

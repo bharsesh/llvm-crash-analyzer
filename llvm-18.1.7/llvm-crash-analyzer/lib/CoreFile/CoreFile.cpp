@@ -65,7 +65,7 @@ bool llvm::crash_analyzer::CoreFile::read(StringRef SolibSearchPath) {
         char link[1024];
         for (auto &p : SysRootPaths) {
           std::string path = p.str();
-          if (!p.endswith("/"))
+          if (!p.ends_with("/"))
             path.push_back('/');
 
           std::string FullLibPath = Twine(path + mName).str();
@@ -175,7 +175,16 @@ bool llvm::crash_analyzer::CoreFile::read(StringRef SolibSearchPath) {
       WithColor::error() << "invalid frame found within core-file\n";
       return false;
     }
-    StringRef fnName = Frame.GetFunctionName();
+    // Some LLDB versions may not provide a function name through the frame
+    // API even when the PC resolves to a valid function (notably for main).
+    // Resolve the PC directly so we stop the backtrace at main instead of
+    // incorrectly processing a subsequent libc frame.
+    const char *FrameFunctionName = Frame.GetFunctionName();
+    if (!FrameFunctionName || !*FrameFunctionName) {
+      auto Function = Frame.GetPCAddress().GetFunction();
+      FrameFunctionName = Function.GetName();
+    }
+    StringRef fnName = FrameFunctionName ? FrameFunctionName : "";
 
     // Functions similar to __libc_start_main and _start or 
     // _be_unix_suspend from Polaris that start the execution

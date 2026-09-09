@@ -32,6 +32,20 @@ Steps:
 
 For LLDBServerWithGDB tests to work, we need to add "-DLLDB_SERVER_GDB_TEST_PATH=/path/to/gdb" option.
 
+To build crash-analyzer for version 18, follow these steps:
+
+git clone git@github.com:bharsesh/llvm-crash-analyzer.git
+cd llvm-crash-analyzer
+git checkout llvm-18.1.7-crash-analyzer-port
+mkdir build
+cd build
+export CC=/auto/binos-tools/llvm18/llvm-18.0-p2/bin/clang
+export CXX=/auto/binos-tools/llvm18/llvm-18.0-p2/bin/clang++
+/auto/binos-tools/llvm40/tools/cmake_326/bin/cmake -G "Ninja" -DLLVM_ENABLE_PROJECTS="clang;lldb;llvm-crash-analyzer" -DLLVM_ENABLE_LIBCXX=ON ../llvm -DLLDB_TEST_COMPILER=$CC -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DLLVM_ENABLE_ASSERTIONS=ON
+/auto/binos-tools/llvm40/tools/ninja/ninja -j8 
+/auto/binos-tools/llvm40/tools/ninja/ninja -j8  check-llvm-crash-analyzer
+
+
 ## Using the tool
 
 1) help:
